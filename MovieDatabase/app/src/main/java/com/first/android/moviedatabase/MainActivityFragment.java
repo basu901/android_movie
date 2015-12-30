@@ -26,7 +26,9 @@ import android.widget.Toast;
 
 import com.squareup.picasso.Picasso;
 
+import org.json.JSONArray;
 import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -44,22 +46,8 @@ import java.util.Iterator;
  */
 public class MainActivityFragment extends Fragment {
 
-    String host="http://www.omdbapi.com/?t=";
-    String details="&y=&plot=short&r=json";
-    String[] urls = {host+"Frozen+"+details,
-            host+"Megamind"+details,
-            host+"The+Avengers+"+details,
-            host+"The+Dark+Knight+"+details,
-            host+"Despicable+me"+details,
-            host+"The+Constant+Gardener"+details,
-            host+"Blood+Diamond"+details,
-            host+"12+Angry+Men"+details,
-            host+"300"+details,
-            host+"The+Lion+King",
-            host+"Hot+Fuzz"+details,
-            host+"Carnage"+details,
-            host+"Up"+details,
-    };
+
+    String urls = "http://api.themoviedb.org/3/discover/movie?sort_by=popularity.desc&api_key="+"API_KEY_HERE";
     ArrayList<Movie> myMovies=new ArrayList<>();
 
 
@@ -100,7 +88,7 @@ public class MainActivityFragment extends Fragment {
 
     public void updateMovie(){
         SharedPreferences sharedPreferences= PreferenceManager.getDefaultSharedPreferences(getActivity());
-        String sortType=sharedPreferences.getString(getString(R.string.pref_sort_by_key),getString(R.string.pref_sort_by_rating));
+        String sortType=sharedPreferences.getString(getString(R.string.pref_sort_by_key),getString(R.string.pref_sort_by_popularity));
         if(sortType.equals(getString(R.string.pref_sort_by_rating))){
             Collections.sort(myMovies, new Comparator<Movie>() {
                 @Override
@@ -138,10 +126,10 @@ public class MainActivityFragment extends Fragment {
                 Intent detail=new Intent(getActivity(),DetailActivity.class);
                 Bundle extras=new Bundle();
                 extras.putString("poster",currentMovie.getPoster());
-                extras.putString("director",currentMovie.getDirector());
+                extras.putString("title",currentMovie.getTitle());
                 extras.putString("released",currentMovie.getRelease());
-                extras.putString("genre",currentMovie.getGenre());
-                extras.putString("runtime",currentMovie.getRuntime());
+                //extras.putString("genre",currentMovie.getGenre());
+                //extras.putString("runtime",currentMovie.getRuntime());
                 extras.putString("plot",currentMovie.getPlot());
                 extras.putString("votes",currentMovie.getVotes());
                 extras.putFloat("rating",currentMovie.getRating());
@@ -212,10 +200,8 @@ public class MainActivityFragment extends Fragment {
             NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
             if (networkInfo != null && networkInfo.isConnected()) {
 
-                for (int i = 0; i < urls.length; i++) {
-
                     try {
-                        URL movieUrl = new URL(urls[i]);
+                        URL movieUrl = new URL(urls);
                         urlConnection = (HttpURLConnection) movieUrl.openConnection();
                         urlConnection.setRequestMethod("GET");
                         urlConnection.connect();
@@ -236,8 +222,14 @@ public class MainActivityFragment extends Fragment {
                         movieJsonStr = buffer.toString();
                         Log.v(LOG_TAG, "Movie Info:" + movieJsonStr);
                         try {
-                            myMovies.add(new Movie(movieJsonStr));
-                            Log.v("Fragment class","Loaded Movie");
+                            JSONObject movie_page= new JSONObject(movieJsonStr);
+                            JSONArray full_movie_list=movie_page.getJSONArray("results");
+                            for(int i=0;i<full_movie_list.length();i++) {
+                                JSONObject each_movie=full_movie_list.getJSONObject(i);
+                                String each_movie_string= each_movie.toString();
+                                myMovies.add(new Movie(each_movie_string));
+                                Log.v("Fragment class", "Loaded Movie");
+                            }
                         } catch (JSONException e) {
                             Log.e("LOG_TAG", "Error in fetching JSON Movie Object", e);
                         }
@@ -258,12 +250,7 @@ public class MainActivityFragment extends Fragment {
                         }
                     }
                 }
-                Iterator<Movie> itr=myMovies.iterator();
-                while(itr.hasNext()){
-                    Movie element=itr.next();
-                    Log.v("Fragment Movie:",element.getPoster());
-                }
-            }
+
 
             else {
                 Context context = getActivity().getApplicationContext();

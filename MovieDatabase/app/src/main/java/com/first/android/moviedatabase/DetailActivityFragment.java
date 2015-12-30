@@ -27,19 +27,19 @@ public class DetailActivityFragment extends Fragment {
         if(intent!=null){
             Bundle extras=intent.getExtras();
             String poster=extras.getString("poster");
-            String director=extras.getString("director");
+            String title=extras.getString("title");
             String released=extras.getString("released");
-            String genre=extras.getString("genre");
-            String runtime=extras.getString("runtime");
+            //String genre=extras.getString("genre");
+           // String runtime=extras.getString("runtime");
             String plot=extras.getString("plot");
             String votes=extras.getString("votes");
             float rating=extras.getFloat("rating");
             ImageView imageView=(ImageView)rootView.findViewById(R.id.movie_poster);
             Picasso.with(getActivity()).load(poster).into(imageView);
-            ((TextView)rootView.findViewById(R.id.director_value)).setText(director);
+            ((TextView)rootView.findViewById(R.id.title_value)).setText(title);
             ((TextView)rootView.findViewById(R.id.released_value)).setText(released);
-            ((TextView)rootView.findViewById(R.id.genre_value)).setText(genre);
-            ((TextView)rootView.findViewById(R.id.runtime_value)).setText(runtime);
+            //((TextView)rootView.findViewById(R.id.genre_value)).setText(genre);
+            //((TextView)rootView.findViewById(R.id.runtime_value)).setText(runtime);
             ((TextView)rootView.findViewById(R.id.plot_value)).setText(plot);
             ((TextView)rootView.findViewById(R.id.votes_value)).setText(votes);
             ((TextView)rootView.findViewById(R.id.rating_value)).setText(""+rating);
